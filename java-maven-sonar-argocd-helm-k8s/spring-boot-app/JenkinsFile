@@ -10,6 +10,7 @@ pipeline {
     SONAR_URL = "http://54.234.74.88:9000"
     GIT_REPO_NAME = "jenkins-End-to-End-CICD"
     GIT_USER_NAME = "vamsikadiyam444"
+    DOCKER_REPO = "vamsikrishna212/ultimate-cicd"
   }
 
   stages {
@@ -42,7 +43,7 @@ pipeline {
 
     stage('Build and Push Docker Image') {
       environment {
-        DOCKER_IMAGE = "abhishekf5/ultimate-cicd:${BUILD_NUMBER}"
+        DOCKER_IMAGE = "${DOCKER_REPO}:${BUILD_NUMBER}"
       }
       steps {
         script {
@@ -76,5 +77,9 @@ pipeline {
   }
 }
 
+   
+        
+
+            
 
   

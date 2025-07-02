@@ -13,10 +13,6 @@ pipeline {
     DOCKER_REPO = "vamsikrishna212/ultimate-cicd"
   }
 
-  options {
-    skipDefaultCheckout() // Explicit checkout
-  }
-
   stages {
     stage('Checkout') {
       steps {
@@ -24,13 +20,14 @@ pipeline {
           branches: [[name: '*/main']],
           userRemoteConfigs: [[url: "https://github.com/${env.GIT_USER_NAME}/${env.GIT_REPO_NAME}.git"]]
         ])
+        // Fix Git folder permissions inside Docker
+        sh 'chown -R $(id -u):$(id -g) .git || true'
       }
     }
 
     stage('Build and Test') {
       steps {
         sh '''
-          ls -ltr
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
           mvn clean package
         '''
@@ -73,18 +70,12 @@ pipeline {
             echo "Current directory: $(pwd)"
             ls -a
 
-            # Allow Git to trust Jenkins workspace directory (needed in Docker)
             git config --global --add safe.directory "$PWD"
-
-            if [ ! -d ".git" ]; then
-              echo "ERROR: .git directory not found!"
-              exit 1
-            fi
-
             git config user.email "vamsikadiyam444@gmail.com"
             git config user.name "vamsikadiyam444"
 
-            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+            # Replace image tag
+            sed -i "s|replaceImageTag|${BUILD_NUMBER}|g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
 
             git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml || true
             git diff --cached --quiet && echo "No changes to commit" || git commit -m "Update deployment image to version ${BUILD_NUMBER}"
@@ -96,9 +87,10 @@ pipeline {
   }
 }
 
-   
+         
         
 
+            
             
 
   

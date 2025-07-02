@@ -1,9 +1,6 @@
 pipeline {
   agent {
-    docker {
-      image 'vamsikrishna212/maven-vamsikadiyam-docker-agent:v2'
-      args '--entrypoint="" --user root -v /var/run/docker.sock:/var/run/docker.sock'
-    }
+    label 'my-agent-node'
   }
 
   environment {
@@ -39,6 +36,12 @@ pipeline {
     }
 
     stage('Build and Test') {
+      agent {
+        docker {
+          image 'vamsikrishna212/maven-vamsikadiyam-docker-agent:v2'
+          args '--entrypoint="" --user root -v /var/run/docker.sock:/var/run/docker.sock'
+        }
+      }
       steps {
         sh '''
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
@@ -48,6 +51,12 @@ pipeline {
     }
 
     stage('Static Code Analysis') {
+      agent {
+        docker {
+          image 'vamsikrishna212/maven-vamsikadiyam-docker-agent:v2'
+          args '--entrypoint="" --user root'
+        }
+      }
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
           sh '''
@@ -98,6 +107,9 @@ pipeline {
     }
   }
 }
+
+
+   
 
         
 

@@ -31,7 +31,6 @@ pipeline {
           branches: [[name: '*/main']],
           userRemoteConfigs: [[url: "https://github.com/${env.GIT_USER_NAME}/${env.GIT_REPO_NAME}.git"]]
         ])
-        // Fix Git folder permissions
         sh '''
           echo "Fixing .git permissions..."
           chown -R $(id -u):$(id -g) .git || true

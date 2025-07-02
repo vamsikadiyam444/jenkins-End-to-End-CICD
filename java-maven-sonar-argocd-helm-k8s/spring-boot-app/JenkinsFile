@@ -14,27 +14,23 @@ pipeline {
   }
 
   options {
-    skipDefaultCheckout()  // Explicit checkout only
+    skipDefaultCheckout()
   }
 
   stages {
     stage('Checkout') {
       steps {
-        // Checkout into root of workspace to ensure .git is available for git commands
-        dir('.') {
-          checkout([$class: 'GitSCM', 
-            branches: [[name: '*/main']], 
-            userRemoteConfigs: [[
-              url: "https://github.com/${env.GIT_USER_NAME}/${env.GIT_REPO_NAME}.git"
-            ]]
-          ])
-        }
+        checkout([$class: 'GitSCM', 
+          branches: [[name: '*/main']], 
+          userRemoteConfigs: [[url: "https://github.com/${env.GIT_USER_NAME}/${env.GIT_REPO_NAME}.git"]]]
+        )
       }
     }
 
     stage('Build and Test') {
       steps {
         sh '''
+          ls -ltr
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
           mvn clean package
         '''
@@ -73,13 +69,23 @@ pipeline {
     stage('Update Deployment File') {
       steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
-          sh '''
-            # Ensure Git runs in root workspace where .git exists
-            git config user.email "vamsikadiyam444@gmail.com"
-            git config user.name "vamsikadiyam444"
+          dir('.') {
+            sh '''
+              git config user.email "vamsikadiyam444@gmail.com"
+              git config user.name "vamsikadiyam444"
 
-            # Update manifest with correct image tag
-            sed -i "s/replaceImageTag/${BUILD_NUMBE_
+              sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+
+              git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
+              git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+              git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+            '''
+          }
+        }
+      }
+    }
+  }
+}
 
           
  

@@ -13,15 +13,29 @@ pipeline {
     DOCKER_REPO = "vamsikrishna212/ultimate-cicd"
   }
 
+  options {
+    skipDefaultCheckout()
+  }
+
   stages {
+    stage('Clean Workspace') {
+      steps {
+        echo 'Cleaning workspace before checkout...'
+        deleteDir() // Deletes all files in the current workspace
+      }
+    }
+
     stage('Checkout') {
       steps {
         checkout([$class: 'GitSCM',
           branches: [[name: '*/main']],
           userRemoteConfigs: [[url: "https://github.com/${env.GIT_USER_NAME}/${env.GIT_REPO_NAME}.git"]]
         ])
-        // Fix Git folder permissions inside Docker
-        sh 'chown -R $(id -u):$(id -g) .git || true'
+        // Fix Git folder permissions
+        sh '''
+          echo "Fixing .git permissions..."
+          chown -R $(id -u):$(id -g) .git || true
+        '''
       }
     }
 
@@ -74,7 +88,6 @@ pipeline {
             git config user.email "vamsikadiyam444@gmail.com"
             git config user.name "vamsikadiyam444"
 
-            # Replace image tag
             sed -i "s|replaceImageTag|${BUILD_NUMBER}|g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
 
             git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml || true
@@ -87,7 +100,6 @@ pipeline {
   }
 }
 
-         
         
 
             

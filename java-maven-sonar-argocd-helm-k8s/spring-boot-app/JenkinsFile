@@ -69,16 +69,16 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
           sh """
-            # Run git config in root (where .git folder is)
+            # Configure git user at workspace root where .git folder exists
             git config user.email "vamsikadiyam444@gmail.com"
             git config user.name "vamsikadiyam444"
 
-            # Now cd into folder to update files
-            cd java-maven-sonar-argocd-helm-k8s
+            # Update deployment manifest with new image tag (relative path)
+            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
 
-            sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" spring-boot-app-manifests/deployment.yml
-            git add spring-boot-app-manifests/deployment.yml
+            git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
             git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+
             git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
           """
         }
@@ -86,6 +86,7 @@ pipeline {
     }
   }
 }
+
 
 
    

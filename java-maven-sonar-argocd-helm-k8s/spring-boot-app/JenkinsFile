@@ -2,7 +2,7 @@ pipeline {
   agent {
     docker {
       image 'vamsikrishna212/maven-vamsikadiyam-docker-agent:v2'
-      args '--entrypoint="" --user root -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/m2_cache:/root/.m2'
+      args '--entrypoint="" --user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
 
@@ -21,7 +21,7 @@ pipeline {
     stage('Clean Workspace') {
       steps {
         echo 'Cleaning workspace before checkout...'
-        deleteDir()
+        deleteDir() // Deletes all files in the current workspace
       }
     }
 
@@ -42,12 +42,7 @@ pipeline {
       steps {
         sh '''
           cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
-          
-          # Download dependencies ahead of time
-          mvn dependency:go-offline
-
-          # Build without tests to save time
-          mvn package -DskipTests
+          mvn clean package
         '''
       }
     }
@@ -104,6 +99,9 @@ pipeline {
   }
 }
 
+        
+
+            
             
 
   

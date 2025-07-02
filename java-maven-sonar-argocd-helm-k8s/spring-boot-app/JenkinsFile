@@ -16,7 +16,9 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        sh 'echo "✅ Checkout Stage Passed"'
+        checkout([$class: 'GitSCM', 
+                  branches: [[name: '*/main']], 
+                  userRemoteConfigs: [[url: "https://github.com/${env.GIT_USER_NAME}/${env.GIT_REPO_NAME}.git"]]])
       }
     }
 
@@ -77,7 +79,10 @@ pipeline {
       }
     }
   }
-}
+}  can i run this 
+          
+         
+     
 
    
         
